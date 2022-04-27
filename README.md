@@ -113,3 +113,39 @@ To add new nodes into the cluster, do the following steps:
 ```bash
 kubeadm join --token <token> <control-plane-host>:<control-plane-port> --discovery-token-ca-cert-hash sha256:<hash>
 ```
+
+## Managing the cluster
+
+### RBAC
+
+RBAC (Role Based Access Control) is a method of regulating access to Kubernetes resources based on roles. It uses the ```rbac.authorization.k8s.io``` API Group, which has four objects: _Role, ClusterRole, RoleBinding_ and _ClusterRoleBinding_.
+
+#### Role and ClusterRoles
+In RBAC, an _Role_ represents a set of rules applied to specified resources in a namespace. _ClusterRoles_ are similar, with the difference that you don't need to specify a namespace, which means you can create a set of rules that applies to the entire cluster.
+- It is important to know that there are no _Deny_ rules in RBAC, as Kubernetes follows the ```deny-all``` model. All access is denied by default until you add a expection.
+
+Here's an example of a Role that grants read access to pods:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group (apiVersion: v1)
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+```
+
+Here's an example of a Cluster that grants read access to nodes (a cluster-scoped resource):
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: node-reader
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "watch", "list"]
+```
