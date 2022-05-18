@@ -9,6 +9,9 @@ Preparation for Certified Kubernetes Administrator
     - [Initializing the Control Plane](#initializing-the-control-plane)
     - [Pod networking](#pod-networking)
     - [Joining worker nodes](#joining-worker-nodes)
+- [Upgrading a cluster](#upgrading-a-cluster)
+    - [Kubeadm](#kubeadm)
+    - [Kubelet and kubectl](#kubelet-and-kubectl)
 ## Kubernetes Architecture
 Kubernetes is a platform for managing containerized workloads and services. It facilitates operations like load balancing, storage provisioning, application rollback and configuration management. It originated at Google, based on a tool called Borg. 
 
@@ -149,3 +152,68 @@ rules:
   resources: ["nodes"]
   verbs: ["get", "watch", "list"]
 ```
+
+### Upgrading a cluster
+
+#### Kubeadm
+In order to upgrade a node's ```kubeadm```, we need to do the following steps:
+
+```bash
+# replace x in 1.24.x-00 with the latest patch version
+apt-mark unhold kubeadm && \
+apt-get update && apt-get install -y kubeadm=1.24.x-00 && \
+apt-mark hold kubeadm
+```
+
+Verify that the download works and has the expected version:
+```bash
+kubeadm version
+```
+
+Verify the upgrade plan:
+```bash
+kubeadm upgrade plan
+```
+
+Apply the upgrade:
+```bash
+# replace x with the patch version you picked for this upgrade
+sudo kubeadm upgrade apply v1.24.x
+```
+
+Once it finishes, you should see:
+```bash
+[upgrade/successful] SUCCESS! Your cluster was upgraded to "v1.24.x". Enjoy!
+
+[upgrade/kubelet] Now that your control plane is upgraded, please proceed with upgrading your kubelets if you haven't already done so.
+```
+
+For the other control plane nodes, we don't have to run ```kubeadm upgrade plan``` or ```sudo kubeadm upgrade apply```. Instead, we use ```sudo kubeadm upgrade node```. 
+
+#### Kubelet and Kubectl
+To upgrade a node's kubelet and kubectl, we first need to drain the node, preventing it from scheduling pods and evicting all workloads:
+
+```bash
+# replace <node-to-drain> with the name of your node you are draining
+kubectl drain <node-to-drain> --ignore-daemonsets
+```
+
+Then, upgrade the kubelet and kubectl by running:
+```bash
+# replace x in 1.24.x-00 with the latest patch version
+apt-mark unhold kubelet kubectl && \
+apt-get update && apt-get install -y kubelet=1.24.x-00 kubectl=1.24.x-00 && \
+apt-mark hold kubelet kubectl
+```
+
+Restart the kubelet:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+```
+
+Finally, we can uncordon the node to bring it back online:
+```bash
+# replace <node-to-drain> with the name of your node
+kubectl uncordon <node-to-drain>
+``` 
