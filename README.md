@@ -9,9 +9,12 @@ Preparation for Certified Kubernetes Administrator
     - [Initializing the Control Plane](#initializing-the-control-plane)
     - [Pod networking](#pod-networking)
     - [Joining worker nodes](#joining-worker-nodes)
-- [Upgrading a cluster](#upgrading-a-cluster)
-    - [Kubeadm](#kubeadm)
-    - [Kubelet and kubectl](#kubelet-and-kubectl)
+- [Managing a Cluster](#managing-a-cluster)
+    - [RBAC](#rbac)
+      - [Roles and ClusterRoles](#roles-and-clusterroles)
+  - [Upgrading a Cluster](#upgrading-a-cluster)
+      - [Kubeadm](#kubeadm)
+      - [Kubelet and kubectl](#kubelet-and-kubectl)
 ## Kubernetes Architecture
 Kubernetes is a platform for managing containerized workloads and services. It facilitates operations like load balancing, storage provisioning, application rollback and configuration management. It originated at Google, based on a tool called Borg. 
 
@@ -123,7 +126,7 @@ kubeadm join --token <token> <control-plane-host>:<control-plane-port> --discove
 
 RBAC (Role Based Access Control) is a method of regulating access to Kubernetes resources based on roles. It uses the ```rbac.authorization.k8s.io``` API Group, which has four objects: _Role, ClusterRole, RoleBinding_ and _ClusterRoleBinding_.
 
-#### Role and ClusterRoles
+#### Roles and ClusterRoles
 In RBAC, an _Role_ represents a set of rules applied to specified resources in a namespace. _ClusterRoles_ are similar, with the difference that you don't need to specify a namespace, which means you can create a set of rules that applies to the entire cluster.
 - It is important to know that there are no _Deny_ rules in RBAC, as Kubernetes follows the ```deny-all``` model. All access is denied by default until you add a expection.
 
